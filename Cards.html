@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>English Vocabulary Trainer</title>
+    <style>
+        :root { --bg: #f1f5f9; --primary: #4f46e5; --success: #22c55e; --danger: #ef4444; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; height: 100vh; color: #1e293b; }
+        
+        .stats { display: flex; justify-content: space-around; padding: 15px; background: #fff; box-shadow: 0 1px 3px rgba(0,0,0,0.1); font-size: 14px; font-weight: 700; }
+        .num { font-size: 18px; color: var(--primary); display: block; text-align: center; }
+
+        .main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 20px; perspective: 1000px; }
+        .card { width: 100%; max-width: 340px; height: 360px; position: relative; transition: transform 0.5s; transform-style: preserve-3d; cursor: pointer; }
+        .card.flipped { transform: rotateY(180deg); }
+        
+        .face { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; border-radius: 24px; background: #fff; box-shadow: 0 10px 25px rgba(0,0,0,0.08); padding: 25px; text-align: center; box-sizing: border-box; border: 1px solid #e2e8f0; }
+        .back { transform: rotateY(180deg); background: #f8faff; border-color: var(--primary); }
+
+        .en { font-size: 32px; font-weight: 800; line-height: 1.2; }
+        .tr { font-size: 18px; color: #64748b; margin-top: 10px; font-family: "Lucida Sans Unicode", sans-serif; }
+        .ru { font-size: 28px; font-weight: 600; color: var(--primary); }
+        .hint { position: absolute; bottom: 20px; font-size: 11px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
+
+        .controls { padding: 20px 20px 40px; display: flex; gap: 12px; background: #fff; border-top: 1px solid #e2e8f0; }
+        button { flex: 1; border: none; padding: 20px; border-radius: 16px; font-size: 16px; font-weight: 700; color: #fff; transition: 0.2s; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+        .b-fail { background: var(--danger); box-shadow: 0 4px 0 #b91c1c; }
+        .b-ok { background: var(--success); box-shadow: 0 4px 0 #15803d; }
+        button:active { transform: translateY(3px); box-shadow: none; }
+    </style>
+</head>
+<body>
+
+<div class="stats">
+    <div>Всего <span class="num" id="s-total">0</span></div>
+    <div>Знаю <span class="num" style="color:var(--success)" id="s-ok">0</span></div>
+    <div>Ошибки <span class="num" style="color:var(--danger)" id="s-fail">0</span></div>
+</div>
+
+<div class="main">
+    <div class="card" id="card" onclick="flip()">
+        <div class="face">
+            <div class="en" id="en">Ready?</div>
+            <div class="tr" id="tr">/ˈredi/</div>
+            <div class="hint">Нажми, чтобы узнать перевод</div>
+        </div>
+        <div class="face back">
+            <div class="ru" id="ru">Готов?</div>
+            <div class="hint">Нажми, чтобы скрыть</div>
+        </div>
+    </div>
+</div>
+
+<div class="controls">
+    <button class="b-fail" onclick="next(false)">Не знаю</button>
+    <button class="b-ok" onclick="next(true)">Знаю</button>
+</div>
+
+<script>
+const words = [
+    // Колонка 1
+    {e:"above", t:"/əˈbʌv/", r:"над"}, {e:"armchair", t:"/ˈɑːmtʃeə/", r:"кресло"}, {e:"art gallery", t:"/ˈɑːt ˌɡæləri/", r:"галерея"}, {e:"attic", t:"/ˈætɪk/", r:"чердак"}, {e:"balcony", t:"/ˈbælkəni/", r:"балкон"}, {e:"bath", t:"/bɑːθ/", r:"ванна"}, {e:"bathroom", t:"/ˈbɑːθruːm/", r:"ванная"}, {e:"bed", t:"/bed/", r:"кровать"}, {e:"bedroom", t:"/ˈbedruːm/", r:"спальня"}, {e:"bedside table", t:"/ˈbedsaɪd ˌteɪbl/", r:"тумбочка"}, {e:"behind", t:"/bɪˈhaɪnd/", r:"позади"}, {e:"between", t:"/bɪˈtwiːn/", r:"между"}, {e:"bidet", t:"/ˈbiːdeɪ/", r:"биде"}, {e:"bright", t:"/braɪt/", r:"яркий"}, {e:"building", t:"/ˈbɪldɪŋ/", r:"здание"}, {e:"café", t:"/ˈkæfeɪ/", r:"кафе"}, {e:"canal", t:"/kəˈnæl/", r:"канал"}, {e:"capital city", t:"/ˈkæpɪtl ˌsɪti/", r:"столица"}, {e:"carpet", t:"/ˈkɑːpɪt/", r:"ковер"}, {e:"castle", t:"/ˈkɑːsl/", r:"замок"}, {e:"ceiling", t:"/ˈsiːlɪŋ/", r:"потолок"}, {e:"chair", t:"/tʃeə/", r:"стул"}, {e:"chimney", t:"/ˈtʃɪmni/", r:"дымоход"}, {e:"church", t:"/tʃɜːtʃ/", r:"церковь"}, {e:"cinema", t:"/ˈsɪnəmə/", r:"кинотеатр"}, {e:"city", t:"/ˈsɪti/", r:"город"}, {e:"coffee table", t:"/ˈkɒfi ˌteɪbl/", r:"журнальный столик"}, {e:"cooker", t:"/ˈkʊkə/", r:"плита"}, {e:"corridor", t:"/ˈkɒrɪdɔː/", r:"коридор"}, {e:"cosy", t:"/ˈkəʊzi/", r:"уютный"}, {e:"countryside", t:"/ˈkʌntrisaɪd/", r:"сельская местность"}, {e:"cupboard", t:"/ˈkʌbəd/", r:"шкаф для посуды"}, {e:"curtains", t:"/ˈkɜːtnz/", r:"шторы"},
+    // Колонка 2
+    {e:"dark", t:"/dɑːk/", r:"темный"}, {e:"desk", t:"/desk/", r:"письменный стол"}, {e:"estate", t:"/ɪˈsteɪt/", r:"поместье/район"}, {e:"fantastic", t:"/fænˈtæstɪk/", r:"фантастический"}, {e:"fireplace", t:"/ˈfaɪəpleɪs/", r:"камин"}, {e:"flat", t:"/flæt/", r:"квартира"}, {e:"floor", t:"/flɔː/", r:"пол/этаж"}, {e:"fridge", t:"/frɪdʒ/", r:"холодильник"}, {e:"furniture", t:"/ˈfɜːnɪtʃə/", r:"мебель"}, {e:"garden", t:"/ˈɡɑːdn/", r:"сад"}, {e:"hall", t:"/hɔːl/", r:"холл"}, {e:"hotel", t:"/həʊˈtel/", r:"отель"}, {e:"in", t:"/ɪn/", r:"в"}, {e:"in front of", t:"/ɪn frʌnt əv/", r:"перед"}, {e:"kitchen", t:"/ˈkɪtʃən/", r:"кухня"}, {e:"lamp", t:"/læmp/", r:"лампа"}, {e:"large", t:"/lɑːdʒ/", r:"большой"}, {e:"library", t:"/ˈlaɪbrəri/", r:"библиотека"}, {e:"light", t:"/laɪt/", r:"свет/светлый"}, {e:"living room", t:"/ˈlɪvɪŋ ruːm/", r:"гостиная"}, {e:"messy", t:"/ˈmesi/", r:"неряшливый"}, {e:"mirror", t:"/ˈmɪrə/", r:"зеркало"}, {e:"modern", t:"/ˈmɒdn/", r:"современный"}, {e:"museum", t:"/mjuːˈziːəm/", r:"музей"}, {e:"narrow", t:"/ˈnærəʊ/", r:"узкий"}, {e:"near", t:"/nɪə/", r:"рядом"}, {e:"neighbour", t:"/ˈneɪbə/", r:"сосед"}, {e:"next to", t:"/nekst tə/", r:"рядом с"}, {e:"old-fashioned", t:"/ˌəʊld ˈfæʃnd/", r:"старомодный"}, {e:"on", t:"/ɒn/", r:"на"}, {e:"opposite", t:"/ˈɒpəzɪt/", r:"напротив"}, {e:"oven", t:"/ˈʌvn/", r:"духовка"}, {e:"painting", t:"/ˈpeɪntɪŋ/", r:"картина"}, {e:"park", t:"/pɑːk/", r:"парк"},
+    // Колонка 3
+    {e:"police station", t:"/pəˈliːs ˌsteɪʃn/", r:"полиция"}, {e:"post office", t:"/ˈpəʊst ˌɒfɪs/", r:"почта"}, {e:"public transport", t:"/ˈpʌblɪk ˈtrænspɔːt/", r:"транспорт"}, {e:"reasonable", t:"/ˈriːznəbl/", r:"приемлемый"}, {e:"relaxing", t:"/rɪˈlæksɪŋ/", r:"расслабляющий"}, {e:"roof", t:"/ruːf/", r:"крыша"}, {e:"room", t:"/ruːm/", r:"комната"}, {e:"round", t:"/raʊnd/", r:"круглый"}, {e:"rug", t:"/rʌɡ/", r:"коврик"}, {e:"shopping centre", t:"/ˈʃɒpɪŋ ˌsentə/", r:"Торговый центр"}, {e:"shower", t:"/ˈʃaʊə/", r:"душ"}, {e:"sink", t:"/sɪŋk/", r:"раковина (кухня)"}, {e:"small", t:"/smɔːl/", r:"маленький"}, {e:"sofa", t:"/ˈsəʊfə/", r:"диван"}, {e:"spacious", t:"/ˈspeɪʃəs/", r:"просторный"}, {e:"station", t:"/ˈsteɪʃn/", r:"станция"}, {e:"street", t:"/striːt/", r:"улица"}, {e:"strict", t:"/strɪkt/", r:"строгий"}, {e:"switch", t:"/swɪtʃ/", r:"выключатель"}, {e:"table", t:"/ˈteɪbl/", r:"стол"}, {e:"tap", t:"/tæp/", r:"кран"}, {e:"tidy", t:"/ˈtaɪdi/", r:"опрятный"}, {e:"toilet", t:"/ˈtɔɪlət/", r:"туалет"}, {e:"tourist info centre", t:"/ˈtʊərɪst/", r:"турцентр"}, {e:"town", t:"/taʊn/", r:"город"}, {e:"town centre", t:"/taʊn ˈsentə/", r:"центр города"}, {e:"town hall", t:"/taʊn hɔːl/", r:"ратуша"}, {e:"traffic", t:"/ˈtræfɪk/", r:"трафик"}, {e:"uncomfortable", t:"/ʌnˈkʌmftəbl/", r:"неудобный"}, {e:"under", t:"/ˈʌndə/", r:"под"},
+    // Колонка 4
+    {e:"upstairs", t:"/ˌʌpˈsteəz/", r:"наверху"}, {e:"view", t:"/vjuː/", r:"вид"}, {e:"village", t:"/ˈvɪlɪdʒ/", r:"деревня"}, {e:"wall", t:"/wɔːl/", r:"стена"}, {e:"wardrobe", t:"/ˈwɔːdrəʊb/", r:"шкаф"}, {e:"washbasin", t:"/ˈwɒʃˌbeɪsn/", r:"раковина"}, {e:"wide", t:"/waɪd/", r:"широкий"}, {e:"window", t:"/ˈwɪndəʊ/", r:"окно"},
+    // Фразы
+    {e:"clear the table", t:"phr", r:"убрать со стола"}, {e:"do the cooking", t:"phr", r:"готовить"}, {e:"do the housework", t:"phr", r:"делать уборку"}, {e:"do the ironing", t:"phr", r:"гладить"}, {e:"do the shopping", t:"phr", r:"за покупками"}, {e:"dry the dishes", t:"phr", r:"сушить посуду"}, {e:"hang out with someone", t:"phr", r:"тусить с кем-то"}, {e:"listen carefully", t:"phr", r:"слушать внимательно"}, {e:"live next door", t:"phr", r:"жить по соседству"}, {e:"load the dishwasher", t:"phr", r:"загрузить посудомойку"}, {e:"make your bed", t:"phr", r:"заправить кровать"}, {e:"move to a new flat", t:"phr", r:"переехать"}, {e:"set the table", t:"phr", r:"накрыть на стол"}, {e:"speak quietly", t:"phr", r:"говорить тихо"}, {e:"stay out late", t:"phr", r:"гулять допоздна"}, {e:"stay up late", t:"phr", r:"поздно лечь"}, {e:"sweep the floor", t:"phr", r:"подмести пол"}, {e:"switch on a lamp", t:"phr", r:"включить лампу"}, {e:"take the rubbish out", t:"phr", r:"вынести мусор"}, {e:"tidy your room", t:"phr", r:"убрать в комнате"}, {e:"vacuum the floor", t:"phr", r:"пылесосить"}, {e:"wash the car", t:"phr", r:"мыть машину"}, {e:"wash the dishes", t:"phr", r:"мыть посуду"}
+];
+
+let deck = [...words].sort(() => Math.random() - 0.5);
+let okCount = 0, failCount = 0;
+
+function updateCard() {
+    if(deck.length === 0) {
+        document.getElementById('en').textContent = "Excellent!";
+        document.getElementById('ru').textContent = "Курс пройден!";
+        return;
+    }
+    const c = deck[0];
+    document.getElementById('en').textContent = c.e;
+    document.getElementById('tr').textContent = c.t;
+    document.getElementById('ru').textContent = c.r;
+    document.getElementById('s-total').textContent = deck.length;
+    document.getElementById('s-ok').textContent = okCount;
+    document.getElementById('s-fail').textContent = failCount;
+}
+
+function flip() {
+    const card = document.getElementById('card');
+    card.classList.toggle('flipped');
+    
+    // ТОЛЬКО АНГЛИЙСКАЯ ОЗВУЧКА
+    if(card.classList.contains('flipped')) {
+        const msg = new SpeechSynthesisUtterance(deck[0].e);
+        msg.lang = 'en-US';
+        msg.rate = 0.9; // чуть помедленнее для четкости
+        window.speechSynthesis.speak(msg);
+    }
+}
+
+function next(isSuccess) {
+    if(isSuccess) okCount++; else failCount++;
+    const card = document.getElementById('card');
+    card.classList.remove('flipped');
+    setTimeout(() => {
+        deck.shift();
+        if(deck.length === 0) {
+            if(confirm("Слова закончились. Повторим?")) {
+                deck = [...words].sort(() => Math.random() - 0.5);
+                okCount = 0; failCount = 0;
+            }
+        }
+        updateCard();
+    }, 150);
+}
+
+updateCard();
+</script>
+</body>
+</html>

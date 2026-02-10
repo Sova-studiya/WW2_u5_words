@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>English Dashboard</title>
+    <style>
+        :root { --bg: #f0f2f5; --primary: #4361ee; --text: #1e293b; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; display: flex; flex-direction: column; align-items: center; min-height: 100vh; color: var(--text); }
+        
+        .header { margin-top: 50px; text-align: center; padding: 0 20px; }
+        .header h1 { font-size: 28px; font-weight: 800; color: var(--primary); margin-bottom: 10px; }
+        .header p { color: #64748b; font-size: 16px; }
+
+        .menu-grid { 
+            display: grid; 
+            grid-template-columns: 1fr; 
+            gap: 15px; 
+            width: 90%; 
+            max-width: 400px; 
+            margin-top: 30px; 
+        }
+
+        .menu-link {
+            text-decoration: none;
+            background: white;
+            padding: 22px;
+            border-radius: 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: transform 0.2s, background 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .menu-link:active {
+            transform: scale(0.97);
+            background: #f8faff;
+            border-color: var(--primary);
+        }
+
+        .icon { font-size: 26px; }
+        .label { font-size: 18px; font-weight: 700; color: var(--text); }
+        .desc { font-size: 13px; color: #64748b; font-weight: 400; display: block; margin-top: 2px; }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>My English App</h1>
+    <p>Unit: House & Town</p>
+</div>
+
+<div class="menu-grid">
+    <a href="Cards.html" class="menu-link">
+        <span class="icon">🎴</span>
+        <div>
+            <span class="label">Карточки</span>
+            <span class="desc">Изучение новых слов и аудио</span>
+        </div>
+    </a>
+
+    <a href="Quiz.html" class="menu-link">
+        <span class="icon">🧩</span>
+        <div>
+            <span class="label">Квиз</span>
+            <span class="desc">Выбор правильного варианта</span>
+        </div>
+    </a>
+
+    <a href="Writing.html" class="menu-link">
+        <span class="icon">✍️</span>
+        <div>
+            <span class="label">Письмо</span>
+            <span class="desc">Перевод 10 случайных слов</span>
+        </div>
+    </a>
+
+    <a href="Dictation.html" class="menu-link">
+        <span class="icon">🎧</span>
+        <div>
+            <span class="label">Диктант</span>
+            <span class="desc">Проверка понимания на слух</span>
+        </div>
+    </a>
+</div>
+
+<footer style="margin-top: auto; padding: 30px; color: #cbd5e1; font-size: 12px;">
+    Ready for practice?
+</footer>
+
+</body>
+</html>

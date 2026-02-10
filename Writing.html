@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Spelling Test - 10 Words</title>
+    <style>
+        :root { --bg: #f3f4f6; --primary: #4f46e5; --success: #22c55e; --danger: #ef4444; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .container { width: 100%; max-width: 500px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); box-sizing: border-box; }
+        h2 { text-align: center; color: #1e293b; font-size: 20px; margin-top: 0; }
+        
+        .word-row { display: flex; flex-direction: column; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #f1f5f9; }
+        .rus-word { font-weight: 700; color: #475569; margin-bottom: 5px; font-size: 16px; }
+        
+        .input-group { display: flex; gap: 10px; }
+        input { flex: 1; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--primary); }
+        
+        .result-text { font-size: 14px; margin-top: 5px; font-weight: 600; display: none; }
+        .correct-ans { color: var(--success); }
+        .wrong-ans { color: var(--danger); }
+
+        .btns { width: 100%; max-width: 500px; margin-top: 20px; display: flex; gap: 10px; }
+        button { flex: 1; padding: 15px; border: none; border-radius: 12px; font-weight: bold; font-size: 16px; cursor: pointer; color: white; transition: 0.2s; }
+        .btn-check { background: var(--primary); }
+        .btn-refresh { background: #64748b; }
+        button:active { transform: scale(0.98); opacity: 0.9; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Переведи на английский (10 слов)</h2>
+    <div id="quiz-list"></div>
+</div>
+
+<div class="btns">
+    <button class="btn-refresh" onclick="location.reload()">Другие 10 слов</button>
+    <button class="btn-check" onclick="checkAnswers()">Проверить</button>
+</div>
+
+<script>
+const dictionary = [
+    {e:"above", r:"над"}, {e:"armchair", r:"кресло"}, {e:"art gallery", r:"галерея"}, {e:"attic", r:"чердак"}, {e:"balcony", r:"балкон"}, {e:"bath", r:"ванна"}, {e:"bathroom", r:"ванная"}, {e:"bed", r:"кровать"}, {e:"bedroom", r:"спальня"}, {e:"bedside table", r:"тумбочка"}, {e:"behind", r:"позади"}, {e:"between", r:"между"}, {e:"bidet", r:"биде"}, {e:"bright", r:"яркий"}, {e:"building", r:"здание"}, {e:"café", r:"кафе"}, {e:"canal", r:"канал"}, {e:"capital city", r:"столица"}, {e:"carpet", r:"ковер"}, {e:"castle", r:"замок"}, {e:"ceiling", r:"потолок"}, {e:"chair", r:"стул"}, {e:"chimney", r:"дымоход"}, {e:"church", r:"церковь"}, {e:"cinema", r:"кинотеатр"}, {e:"city", r:"город"}, {e:"coffee table", r:"журнальный столик"}, {e:"cooker", r:"плита"}, {e:"corridor", r:"коридор"}, {e:"cosy", r:"уютный"}, {e:"countryside", r:"сельская местность"}, {e:"cupboard", r:"шкаф для посуды"}, {e:"curtains", r:"шторы"}, {e:"dark", r:"темный"}, {e:"desk", r:"письменный стол"}, {e:"estate", r:"поместье/район"}, {e:"fantastic", r:"фантастический"}, {e:"fireplace", r:"камин"}, {e:"flat", r:"квартира"}, {e:"floor", r:"пол/этаж"}, {e:"fridge", r:"холодильник"}, {e:"furniture", r:"мебель"}, {e:"garden", r:"сад"}, {e:"hall", r:"холл"}, {e:"hotel", r:"отель"}, {e:"in", r:"в"}, {e:"in front of", r:"перед"}, {e:"kitchen", r:"кухня"}, {e:"lamp", r:"лампа"}, {e:"large", r:"большой"}, {e:"library", r:"библиотека"}, {e:"light", r:"свет/светлый"}, {e:"living room", r:"гостиная"}, {e:"messy", r:"неряшливый"}, {e:"mirror", r:"зеркало"}, {e:"modern", r:"современный"}, {e:"museum", r:"музей"}, {e:"narrow", r:"узкий"}, {e:"near", r:"рядом"}, {e:"neighbour", r:"сосед"}, {e:"next to", r:"рядом с"}, {e:"old-fashioned", r:"старомодный"}, {e:"on", r:"на"}, {e:"opposite", r:"напротив"}, {e:"oven", r:"духовка"}, {e:"painting", r:"картина"}, {e:"park", r:"парк"}, {e:"police station", r:"полиция"}, {e:"post office", r:"почта"}, {e:"public transport", r:"транспорт"}, {e:"reasonable", r:"приемлемый"}, {e:"relaxing", r:"расслабляющий"}, {e:"roof", r:"крыша"}, {e:"room", r:"комната"}, {e:"round", r:"круглый"}, {e:"rug", r:"коврик"}, {e:"shopping centre", r:"ТЦ"}, {e:"shower", r:"душ"}, {e:"sink", r:"раковина (кухня)"}, {e:"small", r:"маленький"}, {e:"sofa", r:"диван"}, {e:"spacious", r:"просторный"}, {e:"station", r:"станция"}, {e:"street", r:"улица"}, {e:"strict", r:"строгий"}, {e:"switch", r:"выключатель"}, {e:"table", r:"стол"}, {e:"tap", r:"кран"}, {e:"tidy", r:"опрятный"}, {e:"toilet", r:"туалет"}, {e:"tourist info centre", r:"турцентр"}, {e:"town", r:"город"}, {e:"town centre", r:"центр города"}, {e:"town hall", r:"ратуша"}, {e:"traffic", r:"трафик"}, {e:"uncomfortable", r:"неудобный"}, {e:"under", r:"под"}, {e:"upstairs", r:"наверху"}, {e:"view", r:"вид"}, {e:"village", r:"деревня"}, {e:"wall", r:"стена"}, {e:"wardrobe", r:"шкаф"}, {e:"washbasin", r:"раковина"}, {e:"wide", r:"широкий"}, {e:"window", r:"окно"}, {e:"clear the table", r:"убрать со стола"}, {e:"do the cooking", r:"готовить"}, {e:"do the housework", r:"убираться"}, {e:"do the ironing", r:"гладить"}, {e:"do the shopping", r:"за покупками"}, {e:"dry the dishes", r:"сушить посуду"}, {e:"hang out with someone", r:"тусить"}, {e:"listen carefully", r:"слушать внимательно"}, {e:"live next door", r:"жить по соседству"}, {e:"load the dishwasher", r:"загрузить посудомойку"}, {e:"make your bed", r:"заправить кровать"}, {e:"move to a new flat", r:"переехать"}, {e:"set the table", r:"накрыть на стол"}, {e:"speak quietly", r:"говорить тихо"}, {e:"stay out late", r:"гулять допоздна"}, {e:"stay up late", r:"поздно лечь"}, {e:"sweep the floor", r:"подмести пол"}, {e:"switch on a lamp", r:"включить лампу"}, {e:"take the rubbish out", r:"вынести мусор"}, {e:"tidy your room", r:"убрать в комнате"}, {e:"vacuum the floor", r:"пылесосить"}, {e:"wash the car", r:"мыть машину"}, {e:"wash the dishes", r:"мыть посуду"}
+];
+
+let testWords = [];
+
+function init() {
+    testWords = [...dictionary].sort(() => Math.random() - 0.5).slice(0, 10);
+    const list = document.getElementById('quiz-list');
+    list.innerHTML = testWords.map((w, idx) => `
+        <div class="word-row">
+            <div class="rus-word">${w.r}</div>
+            <div class="input-group">
+                <input type="text" id="input-${idx}" placeholder="English..." autocomplete="off" autocapitalize="none">
+            </div>
+            <div id="res-${idx}" class="result-text"></div>
+        </div>
+    `).join('');
+}
+
+function checkAnswers() {
+    testWords.forEach((w, idx) => {
+        const input = document.getElementById(`input-${idx}`);
+        const result = document.getElementById(`res-${idx}`);
+        const userVal = input.value.trim().toLowerCase();
+        const correctVal = w.e.toLowerCase();
+
+        result.style.display = 'block';
+        if(userVal === correctVal) {
+            input.style.borderColor = "var(--success)";
+            result.innerHTML = `✓ Верно!`;
+            result.className = "result-text correct-ans";
+            
+            // Озвучка правильного ответа
+            const msg = new SpeechSynthesisUtterance(w.e);
+            msg.lang = 'en-US';
+            window.speechSynthesis.speak(msg);
+        } else {
+            input.style.borderColor = "var(--danger)";
+            result.innerHTML = `✗ Ошибка. Правильно: <b>${w.e}</b>`;
+            result.className = "result-text wrong-ans";
+        }
+    });
+}
+
+init();
+</script>
+</body>
+</html>

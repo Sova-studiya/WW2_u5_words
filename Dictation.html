@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ultimate Dictation</title>
+    <style>
+        :root { --bg: #f0f2f5; --primary: #4361ee; --success: #4cc9f0; --danger: #f72585; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 15px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 500px; background: white; padding: 20px; border-radius: 20px; box-shadow: 0 4px 20px rgba(0,0,0,0.08); box-sizing: border-box; }
+        h2 { text-align: center; color: #2b2d42; margin-bottom: 5px; font-size: 20px; }
+        .sub { text-align: center; color: #8d99ae; font-size: 13px; margin-bottom: 20px; }
+        .row { background: #f8faff; padding: 12px; border-radius: 15px; margin-bottom: 12px; border: 1px solid #edf2f7; }
+        .top-row { display: flex; align-items: center; gap: 10px; margin-bottom: 8px; }
+        .play-btn { background: var(--primary); border: none; width: 40px; height: 40px; border-radius: 12px; color: white; cursor: pointer; font-size: 18px; }
+        input { width: 100%; padding: 12px; border: 2px solid #e2e8f0; border-radius: 10px; font-size: 16px; outline: none; box-sizing: border-box; }
+        input:focus { border-color: var(--primary); }
+        .res { font-size: 13px; margin-top: 5px; font-weight: bold; display: none; }
+        .btn-group { width: 100%; max-width: 500px; display: flex; gap: 10px; margin-top: 15px; }
+        .btn { flex: 1; padding: 16px; border: none; border-radius: 12px; font-weight: bold; color: white; cursor: pointer; }
+        .check { background: #2b2d42; }
+        .next { background: #8d99ae; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Слуховой диктант</h2>
+    <div class="sub">Послушай 10 случайных слов из списка</div>
+    <div id="list"></div>
+</div>
+
+<div class="btn-group">
+    <button class="btn next" onclick="location.reload()">Новые 10 слов</button>
+    <button class="btn check" onclick="checkAll()">Проверить</button>
+</div>
+
+<script>
+const words = [
+    // Column 1 & 2 (Things in house / Town)
+    {e:"above", r:"над"}, {e:"armchair", r:"кресло"}, {e:"art gallery", r:"галерея"}, {e:"attic", r:"чердак"}, {e:"balcony", r:"балкон"}, {e:"bath", r:"ванна"}, {e:"bathroom", r:"ванная"}, {e:"bed", r:"кровать"}, {e:"bedroom", r:"спальня"}, {e:"bedside table", r:"тумбочка"}, {e:"behind", r:"позади"}, {e:"between", r:"между"}, {e:"bidet", r:"биде"}, {e:"bright", r:"яркий"}, {e:"building", r:"здание"}, {e:"café", r:"кафе"}, {e:"canal", r:"канал"}, {e:"capital city", r:"столица"}, {e:"carpet", r:"ковер"}, {e:"castle", r:"замок"}, {e:"ceiling", r:"потолок"}, {e:"chair", r:"стул"}, {e:"chimney", r:"дымоход"}, {e:"church", r:"церковь"}, {e:"cinema", r:"кинотеатр"}, {e:"city", r:"город"}, {e:"coffee table", r:"журнальный столик"}, {e:"cooker", r:"плита"}, {e:"corridor", r:"коридор"}, {e:"cosy", r:"уютный"}, {e:"countryside", r:"сельская местность"}, {e:"cupboard", r:"шкаф для посуды"}, {e:"curtains", r:"шторы"}, {e:"dark", r:"темный"}, {e:"desk", r:"письменный стол"}, {e:"estate", r:"поместье/район"}, {e:"fantastic", r:"фантастический"}, {e:"fireplace", r:"камин"}, {e:"flat", r:"квартира"}, {e:"floor", r:"пол/этаж"}, {e:"fridge", r:"холодильник"}, {e:"furniture", r:"мебель"}, {e:"garden", r:"сад"}, {e:"hall", r:"холл"}, {e:"hotel", r:"отель"}, {e:"in", r:"в"}, {e:"in front of", r:"перед"}, {e:"kitchen", r:"кухня"}, {e:"lamp", r:"лампа"}, {e:"large", r:"большой"}, {e:"library", r:"библиотека"}, {e:"light", r:"свет/светлый"}, {e:"living room", r:"гостиная"}, {e:"messy", r:"неряшливый"}, {e:"mirror", r:"зеркало"}, {e:"modern", r:"современный"}, {e:"museum", r:"музей"}, {e:"narrow", r:"узкий"}, {e:"near", r:"рядом"}, {e:"neighbour", r:"сосед"}, {e:"next to", r:"рядом с"}, {e:"old-fashioned", r:"старомодный"}, {e:"on", r:"на"}, {e:"opposite", r:"напротив"}, {e:"oven", r:"духовка"}, {e:"painting", r:"картина"}, {e:"park", r:"парк"}, {e:"police station", r:"полиция"}, {e:"post office", r:"почта"}, {e:"public transport", r:"транспорт"}, {e:"reasonable", r:"приемлемый"}, {e:"relaxing", r:"расслабляющий"}, {e:"roof", r:"крыша"}, {e:"room", r:"комната"}, {e:"round", r:"круглый"}, {e:"rug", r:"коврик"}, {e:"shopping centre", r:"ТЦ"}, {e:"shower", r:"душ"}, {e:"sink", r:"раковина (кухня)"}, {e:"small", r:"маленький"}, {e:"sofa", r:"диван"}, {e:"spacious", r:"просторный"}, {e:"station", r:"станция"}, {e:"street", r:"улица"}, {e:"strict", r:"строгий"}, {e:"switch", r:"выключатель"}, {e:"table", r:"стол"}, {e:"tap", r:"кран"}, {e:"tidy", r:"опрятный"}, {e:"toilet", r:"туалет"}, {e:"tourist info centre", r:"турцентр"}, {e:"town", r:"город"}, {e:"town centre", r:"центр города"}, {e:"town hall", r:"ратуша"}, {e:"traffic", r:"трафик"}, {e:"uncomfortable", r:"неудобный"}, {e:"under", r:"под"}, {e:"upstairs", r:"наверху"}, {e:"view", r:"вид"}, {e:"village", r:"деревня"}, {e:"wall", r:"стена"}, {e:"wardrobe", r:"шкаф"}, {e:"washbasin", r:"раковина"}, {e:"wide", r:"широкий"}, {e:"window", r:"окно"},
+    // Word Friends
+    {e:"clear the table", r:"убрать со стола"}, {e:"do the cooking", r:"готовить"}, {e:"do the housework", r:"убираться"}, {e:"do the ironing", r:"гладить"}, {e:"do the shopping", r:"за покупками"}, {e:"dry the dishes", r:"сушить посуду"}, {e:"hang out with someone", r:"тусить"}, {e:"listen carefully", r:"слушать внимательно"}, {e:"live next door", r:"жить по соседству"}, {e:"load the dishwasher", r:"загрузить посудомойку"}, {e:"make your bed", r:"заправить кровать"}, {e:"move to a new flat", r:"переехать"}, {e:"set the table", r:"накрыть на стол"}, {e:"speak quietly", r:"говорить тихо"}, {e:"stay out late", r:"гулять допоздна"}, {e:"stay up late", r:"поздно лечь"}, {e:"sweep the floor", r:"подмести пол"}, {e:"switch on a lamp", r:"включить лампу"}, {e:"take the rubbish out", r:"вынести мусор"}, {e:"tidy your room", r:"убрать в комнате"}, {e:"vacuum the floor", r:"пылесосить"}, {e:"wash the car", r:"мыть машину"}, {e:"wash the dishes", r:"мыть посуду"}
+];
+
+let testSet = [...words].sort(() => Math.random() - 0.5).slice(0, 10);
+
+function say(t) {
+    const m = new SpeechSynthesisUtterance(t);
+    m.lang = 'en-US';
+    m.rate = 0.85;
+    speechSynthesis.speak(m);
+}
+
+const listDiv = document.getElementById('list');
+listDiv.innerHTML = testSet.map((w, i) => `
+    <div class="row">
+        <div class="top-row">
+            <button class="play-btn" onclick="say(testSet[${i}].e)">▶</button>
+            <span style="color:#64748b; font-size:14px">Слушай и пиши:</span>
+        </div>
+        <input type="text" id="in-${i}" autocomplete="off" autocapitalize="none">
+        <div id="res-${i}" class="res"></div>
+    </div>
+`).join('');
+
+function checkAll() {
+    testSet.forEach((w, i) => {
+        const inp = document.getElementById(`in-${i}`);
+        const res = document.getElementById(`res-${i}`);
+        const val = inp.value.trim().toLowerCase();
+        res.style.display = 'block';
+        if(val === w.e.toLowerCase()) {
+            res.innerHTML = "✓ Правильно! (" + w.r + ")";
+            res.style.color = "var(--success)";
+        } else {
+            res.innerHTML = "✗ Ошибка! Было: " + w.e + " (" + w.r + ")";
+            res.style.color = "var(--danger)";
+        }
+    });
+}
+</script>
+</body>
+</html>
