@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Context Master</title>
+    <style>
+        :root { --bg: #f8fafc; --primary: #6366f1; --success: #22c55e; --danger: #ef4444; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .nav { width: 100%; max-width: 400px; margin-bottom: 20px; }
+        .back { text-decoration: none; color: var(--primary); font-weight: bold; background: white; padding: 10px 15px; border-radius: 12px; box-shadow: 0 2px 8px rgba(0,0,0,0.05); }
+        .card { background: white; width: 100%; max-width: 400px; padding: 30px; border-radius: 25px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; box-sizing: border-box; margin-bottom: 20px; border: 1px solid #e2e8f0; }
+        .sentence { font-size: 22px; font-weight: 700; line-height: 1.4; color: #1e293b; margin-bottom: 25px; min-height: 80px; display: flex; align-items: center; justify-content: center; }
+        .opt { width: 100%; background: white; border: 2px solid #f1f5f9; padding: 18px; border-radius: 18px; font-size: 16px; font-weight: 600; margin-bottom: 12px; cursor: pointer; transition: 0.2s; -webkit-tap-highlight-color: transparent; color: #475569; }
+        .correct { background: var(--success) !important; color: white !important; border-color: var(--success) !important; }
+        .wrong { background: var(--danger) !important; color: white !important; border-color: var(--danger) !important; }
+        .progress { font-size: 13px; color: #94a3b8; margin-top: 15px; font-weight: 500; }
+        span.gap { color: var(--primary); text-decoration: underline; }
+    </style>
+</head>
+<body>
+    <div class="nav"><a href="Menu.html" class="back">🏠 Меню</a></div>
+    <div class="card">
+        <div id="sentence" class="sentence">Loading...</div>
+        <div id="progress" class="progress"></div>
+    </div>
+    <div id="options" style="width: 100%; max-width: 400px;"></div>
+
+<script>
+const allWords = [
+    {e:"above", s:"The clock is ___ the sofa."},
+    {e:"armchair", s:"Grandpa is sleeping in his ___."},
+    {e:"art gallery", s:"We saw beautiful paintings at the ___."},
+    {e:"attic", s:"We keep old boxes up in the ___."},
+    {e:"balcony", s:"I like to have coffee on the ___."},
+    {e:"bath", s:"I'm going to take a hot ___."},
+    {e:"bathroom", s:"Where is the ___? I need to wash my hands."},
+    {e:"bed", s:"It's 11 PM, I'm going to ___."},
+    {e:"bedroom", s:"I have a big wardrobe in my ___."},
+    {e:"bedside table", s:"I put my phone on the ___."},
+    {e:"behind", s:"The cat is hiding ___ the curtains."},
+    {e:"between", s:"The table is ___ the two chairs."},
+    {e:"bidet", s:"You can find a ___ in many European bathrooms."},
+    {e:"bright", s:"The room is very ___ because of the big windows."},
+    {e:"building", s:"That tall ___ is a new hotel."},
+    {e:"café", s:"Let's meet for coffee at the ___."},
+    {e:"canal", s:"Venice is famous for every ___ and bridge."},
+    {e:"capital city", s:"London is the ___ of the UK."},
+    {e:"carpet", s:"Please take off your shoes, I have a new ___."},
+    {e:"castle", s:"The king lived in a huge stone ___."},
+    {e:"ceiling", s:"There is a fly on the ___."},
+    {e:"chair", s:"Please sit down on this ___."},
+    {e:"chimney", s:"Smoke is coming out of the ___."},
+    {e:"church", s:"The ___ bells ring every Sunday."},
+    {e:"cinema", s:"We watched a movie at the ___."},
+    {e:"city", s:"New York is a very busy ___."},
+    {e:"coffee table", s:"Put your cup on the ___."},
+    {e:"cooker", s:"Don't touch the ___, it's very hot!"},
+    {e:"corridor", s:"His room is at the end of the ___."},
+    {e:"cosy", s:"This small room is very warm and ___."},
+    {e:"countryside", s:"I love fresh air in the ___."},
+    {e:"cupboard", s:"The plates are in the kitchen ___."},
+    {e:"curtains", s:"Open the ___ to let the light in."},
+    {e:"dark", s:"It's very ___ here, I can't see anything."},
+    {e:"desk", s:"I do my homework at my ___."},
+    {e:"estate", s:"He lives on a quiet housing ___."},
+    {e:"fantastic", s:"The view from the balcony is ___!"},
+    {e:"fireplace", s:"We put some wood into the ___."},
+    {e:"flat", s:"We live on the 3rd floor of this ___."},
+    {e:"floor", s:"My bag is on the ___."},
+    {e:"fridge", s:"Put the juice back into the ___."},
+    {e:"furniture", s:"The room is empty, there is no ___."},
+    {e:"garden", s:"Children are playing in the ___."},
+    {e:"hall", s:"Leave your coat in the ___."},
+    {e:"hotel", s:"We stayed in a five-star ___."},
+    {e:"in", s:"The keys are ___ my pocket."},
+    {e:"in front of", s:"There is a car parked ___ our house."},
+    {e:"kitchen", s:"I am making a sandwich in the ___."},
+    {e:"lamp", s:"Turn on the ___ so you can read."},
+    {e:"large", s:"They have a ___ family with six kids."},
+    {e:"library", s:"I need to return these books to the ___."},
+    {e:"light", s:"Turn off the ___ when you leave."},
+    {e:"living room", s:"The whole family is watching TV in the ___."},
+    {e:"messy", s:"Your room is very ___, please clean it!"},
+    {e:"mirror", s:"He is looking at his hair in the ___."},
+    {e:"modern", s:"I don't like old houses, I prefer ___ ones."},
+    {e:"museum", s:"We saw dinosaur bones at the ___."},
+    {e:"narrow", s:"The street is too ___ for a big bus."},
+    {e:"near", s:"The school is very ___ my house."},
+    {e:"neighbour", s:"Our ___ is very friendly."},
+    {e:"next to", s:"The bank is ___ the post office."},
+    {e:"old-fashioned", s:"This dress looks a bit ___ now."},
+    {e:"on", s:"The book is ___ the table."},
+    {e:"opposite", s:"The bus stop is ___ the pharmacy."},
+    {e:"oven", s:"The cake is in the ___."},
+    {e:"painting", s:"That is a beautiful ___ on the wall."},
+    {e:"park", s:"Let's go for a walk in the ___."},
+    {e:"police station", s:"The officer works at the ___."},
+    {e:"post office", s:"I need to send a letter at the ___."},
+    {e:"public transport", s:"I go to work by ___."},
+    {e:"reasonable", s:"The price for this flat is very ___."},
+    {e:"relaxing", s:"A hot bath is very ___."},
+    {e:"roof", s:"The cat is sitting on the ___."},
+    {e:"room", s:"How many people are in this ___?"},
+    {e:"round", s:"We have a big ___ dining table."},
+    {e:"rug", s:"I have a small ___ next to my bed."},
+    {e:"shopping centre", s:"Let's go buy clothes at the ___."},
+    {e:"shower", s:"I always take a ___ in the morning."},
+    {e:"sink", s:"Wash the apples in the ___."},
+    {e:"small", s:"This t-shirt is too ___ for me."},
+    {e:"sofa", s:"Sit on the ___ and relax."},
+    {e:"spacious", s:"The new kitchen is very ___."},
+    {e:"station", s:"The train leaves from the ___."},
+    {e:"street", s:"Our house is on a very quiet ___."},
+    {e:"strict", s:"Our teacher is very ___, no talking!"},
+    {e:"switch", s:"Where is the light ___?"},
+    {e:"table", s:"Dinner is on the ___."},
+    {e:"tap", s:"The ___ in the bathroom is leaking."},
+    {e:"tidy", s:"Her room is always very ___."},
+    {e:"toilet", s:"Is there a ___ in this café?"},
+    {e:"tourist info centre", s:"Ask for a map at the ___."},
+    {e:"town", s:"I live in a small ___."},
+    {e:"town centre", s:"There are many shops in the ___."},
+    {e:"town hall", s:"The mayor works in the ___."},
+    {e:"traffic", s:"There is too much ___ in the morning."},
+    {e:"uncomfortable", s:"This wooden chair is very ___."},
+    {e:"under", s:"The dog is sleeping ___ the table."},
+    {e:"upstairs", s:"I'm going ___ to my bedroom."},
+    {e:"view", s:"The ___ from the window is beautiful."},
+    {e:"village", s:"My grandma lives in a quiet ___."},
+    {e:"wall", s:"There are many photos on the ___."},
+    {e:"wardrobe", s:"I keep my suits in the ___."},
+    {e:"washbasin", s:"Brush your teeth at the ___."},
+    {e:"wide", s:"The river is very ___ here."},
+    {e:"window", s:"Please close the ___, it's cold."},
+    {e:"clear the table", s:"Can you help me ___ after lunch?"},
+    {e:"do the cooking", s:"My dad likes to ___ on weekends."},
+    {e:"do the housework", s:"I usually ___ on Saturday mornings."},
+    {e:"do the ironing", s:"I need to ___ my shirts."},
+    {e:"do the shopping", s:"We need milk, let's ___."},
+    {e:"dry the dishes", s:"You wash and I will ___."},
+    {e:"hang out with someone", s:"I want to ___ my friends."},
+    {e:"listen carefully", s:"Please ___ to my instructions."},
+    {e:"live next door", s:"My best friend happens to ___."},
+    {e:"load the dishwasher", s:"Can you ___ after the meal?"},
+    {e:"make your bed", s:"You should ___ every morning."},
+    {e:"move to a new flat", s:"We are going to ___ next month."},
+    {e:"set the table", s:"Can you ___? Dinner is ready."},
+    {e:"speak quietly", s:"Please ___ in the library."},
+    {e:"stay out late", s:"My parents don't let me ___."},
+    {e:"stay up late", s:"I sometimes ___ to watch movies."},
+    {e:"sweep the floor", s:"I need to ___ in the kitchen."},
+    {e:"switch on a lamp", s:"It's dark, please ___."},
+    {e:"take the rubbish out", s:"It's your turn to ___."},
+    {e:"tidy your room", s:"You must ___ before you go out."},
+    {e:"vacuum the floor", s:"I need to ___ in the living room."},
+    {e:"wash the car", s:"Let's ___ together this Sunday."},
+    {e:"wash the dishes", s:"I will ___ after the party."}
+];
+
+let currentRoundWords = [];
+let currentIndex = 0;
+let canClick = true;
+
+function init() {
+    currentRoundWords = [...allWords].sort(() => Math.random() - 0.5).slice(0, 35);
+    currentIndex = 0;
+    render();
+}
+
+function render() {
+    if (currentIndex >= currentRoundWords.length) {
+        alert("Поздравляю! Ты прошла 35 слов.");
+        location.reload();
+        return;
+    }
+    canClick = true;
+    const item = currentRoundWords[currentIndex];
+    
+    // Заменяем само слово в предложении на нижнее подчеркивание
+    let displaySentence = item.s.replace(new RegExp(item.e, 'gi'), "_______");
+    document.getElementById('sentence').innerHTML = displaySentence;
+    document.getElementById('progress').textContent = `Слово ${currentIndex + 1} из ${currentRoundWords.length}`;
+
+    let opts = [item.e];
+    while(opts.length < 4) {
+        let r = allWords[Math.floor(Math.random()*allWords.length)].e;
+        if(!opts.includes(r)) opts.push(r);
+    }
+    opts.sort(() => Math.random() - 0.5);
+
+    document.getElementById('options').innerHTML = opts.map(o => `
+        <button class="opt" onclick="check('${o}', this)">${o}</button>
+    `).join('');
+}
+
+function check(val, btn) {
+    if(!canClick) return;
+    const correct = currentRoundWords[currentIndex].e;
+    
+    if (val === correct) {
+        canClick = false;
+        btn.classList.add('correct');
+        speak(val);
+        setTimeout(() => {
+            currentIndex++;
+            render();
+        }, 1200);
+    } else {
+        btn.classList.add('wrong');
+        speak(correct); // Озвучка правильного, чтобы запомнить ошибку
+    }
+}
+
+function speak(t) {
+    window.speechSynthesis.cancel();
+    const m = new SpeechSynthesisUtterance(t);
+    m.lang = 'en-US'; m.rate = 0.9;
+    window.speechSynthesis.speak(m);
+}
+
+init();
+</script>
+</body>
+</html>
